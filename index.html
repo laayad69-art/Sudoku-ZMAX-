@@ -1,0 +1,3435 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sudoku ZMAX | تحدّي العقل الذهبي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ===== RESET & BASE STYLES ===== */
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --primary-light: #6d8aff;
+            --secondary: #ff6b9d;
+            --secondary-dark: #e0558a;
+            --accent: #00d4aa;
+            --accent-dark: #00b896;
+            --success: #00d4aa;
+            --error: #ff4757;
+            --warning: #ffa502;
+            --info: #2ed573;
+            
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            
+            --border-radius-sm: 12px;
+            --border-radius: 20px;
+            --border-radius-lg: 28px;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.15);
+            
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Almarai', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            direction: rtl;
+            overflow-x: hidden;
+            line-height: 1.6;
+            transition: background-color var(--transition), color var(--transition);
+        }
+
+        /* ===== LOADER ===== */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: background-color var(--transition);
+        }
+
+        .loader-logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+            box-shadow: 0 8px 24px rgba(67, 97, 238, 0.3);
+        }
+
+        .loader-logo i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .loader-text {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ===== HEADER ===== */
+        .main-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition);
+        }
+
+        body.dark-theme .main-header {
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        body.purple-theme .main-header {
+            background: rgba(36, 0, 70, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        body.blue-theme .main-header {
+            background: rgba(29, 53, 87, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+
+        .logo-text {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 20px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-stats {
+            display: flex;
+            gap: 12px;
+        }
+
+        .stat-badge {
+            background: rgba(67, 97, 238, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary);
+            border: 1px solid rgba(67, 97, 238, 0.2);
+            transition: all var(--transition);
+        }
+
+        body.dark-theme .stat-badge {
+            background: rgba(74, 107, 255, 0.1);
+            border: 1px solid rgba(74, 107, 255, 0.2);
+            color: #6d8aff;
+        }
+
+        body.purple-theme .stat-badge {
+            background: rgba(114, 9, 183, 0.1);
+            border: 1px solid rgba(114, 9, 183, 0.2);
+            color: #9d4edd;
+        }
+
+        body.blue-theme .stat-badge {
+            background: rgba(58, 134, 255, 0.1);
+            border: 1px solid rgba(58, 134, 255, 0.2);
+            color: #4cc9f0;
+        }
+
+        .stat-badge i {
+            color: var(--primary);
+        }
+
+        body.dark-theme .stat-badge i {
+            color: #6d8aff;
+        }
+
+        body.purple-theme .stat-badge i {
+            color: #9d4edd;
+        }
+
+        body.blue-theme .stat-badge i {
+            color: #4cc9f0;
+        }
+
+        /* ===== NAVIGATION ===== */
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 15px;
+            gap: 8px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition);
+        }
+
+        body.dark-theme .nav-tabs {
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        body.purple-theme .nav-tabs {
+            background: rgba(36, 0, 70, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        body.blue-theme .nav-tabs {
+            background: rgba(29, 53, 87, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 14px 5px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        body.dark-theme .nav-tab,
+        body.purple-theme .nav-tab,
+        body.blue-theme .nav-tab {
+            color: #cbd5e1;
+        }
+
+        .nav-tab:hover {
+            background: rgba(67, 97, 238, 0.05);
+            color: var(--primary);
+        }
+
+        body.dark-theme .nav-tab:hover {
+            background: rgba(74, 107, 255, 0.1);
+            color: #6d8aff;
+        }
+
+        body.purple-theme .nav-tab:hover {
+            background: rgba(114, 9, 183, 0.1);
+            color: #9d4edd;
+        }
+
+        body.blue-theme .nav-tab:hover {
+            background: rgba(58, 134, 255, 0.1);
+            color: #4cc9f0;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+
+        body.dark-theme .nav-tab.active {
+            background: linear-gradient(135deg, #4a6bff, #ff6b9d);
+            box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+        }
+
+        body.purple-theme .nav-tab.active {
+            background: linear-gradient(135deg, #7209b7, #f72585);
+            box-shadow: 0 4px 12px rgba(114, 9, 183, 0.3);
+        }
+
+        body.blue-theme .nav-tab.active {
+            background: linear-gradient(135deg, #3a86ff, #8338ec);
+            box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3);
+        }
+
+        .nav-tab i {
+            font-size: 20px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            padding: 25px 20px;
+            display: none;
+            transition: background-color var(--transition);
+        }
+
+        body.dark-theme .main-content,
+        body.purple-theme .main-content,
+        body.blue-theme .main-content {
+            background-color: transparent;
+        }
+
+        .main-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== GAME TAB ===== */
+        .game-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ===== GAME STATS ===== */
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .game-stat {
+            background: white;
+            border-radius: var(--border-radius-sm);
+            padding: 15px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        body.dark-theme .game-stat,
+        body.purple-theme .game-stat,
+        body.blue-theme .game-stat {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+        }
+
+        .game-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        body.dark-theme .game-stat:hover,
+        body.purple-theme .game-stat:hover,
+        body.blue-theme .game-stat:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        body.dark-theme .stat-label,
+        body.purple-theme .stat-label,
+        body.blue-theme .stat-label {
+            color: #94a3b8;
+        }
+
+        .stat-value {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        body.dark-theme .stat-value,
+        body.purple-theme .stat-value,
+        body.blue-theme .stat-value {
+            color: #f8fafc;
+        }
+
+        .timer .stat-value {
+            color: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.dark-theme .timer .stat-value {
+            background: linear-gradient(135deg, #4a6bff, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.purple-theme .timer .stat-value {
+            background: linear-gradient(135deg, #7209b7, #f72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.blue-theme .timer .stat-value {
+            background: linear-gradient(135deg, #3a86ff, #8338ec);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ===== SUDOKU BOARD - DESIGN MODERN ===== */
+        .sudoku-board-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin: 25px 0;
+            display: flex;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-theme .sudoku-board-container,
+        body.purple-theme .sudoku-board-container,
+        body.blue-theme .sudoku-board-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sudoku-board-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+            border: 3px solid var(--bg-tertiary);
+            border-radius: 12px;
+            max-width: 340px;
+            width: 100%;
+            aspect-ratio: 1;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 4px;
+        }
+
+        body.dark-theme .sudoku-grid {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 3px solid #475569;
+        }
+
+        body.purple-theme .sudoku-grid {
+            background: linear-gradient(135deg, #3a0ca3 0%, #480ca8 100%);
+            border: 3px solid #560bad;
+        }
+
+        body.blue-theme .sudoku-grid {
+            background: linear-gradient(135deg, #1d3557 0%, #2a486b 100%);
+            border: 3px solid #315a7a;
+        }
+
+        /* Adjust cell size for mobile */
+        @media (max-width: 380px) {
+            .sudoku-grid {
+                max-width: 300px;
+            }
+        }
+
+        .sudoku-cell {
+            background: white;
+            border: 1px solid #dee2e6;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            position: relative;
+        }
+
+        body.dark-theme .sudoku-cell {
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: #f8fafc;
+        }
+
+        body.purple-theme .sudoku-cell {
+            background: #3a0ca3;
+            border: 1px solid #560bad;
+            color: #f8fafc;
+        }
+
+        body.blue-theme .sudoku-cell {
+            background: #1d3557;
+            border: 1px solid #315a7a;
+            color: #f8fafc;
+        }
+
+        @media (max-width: 380px) {
+            .sudoku-cell {
+                font-size: 16px;
+            }
+        }
+
+        .sudoku-cell:hover {
+            background: var(--bg-secondary);
+            transform: scale(1.05);
+            z-index: 1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-theme .sudoku-cell:hover {
+            background: #334155;
+        }
+
+        body.purple-theme .sudoku-cell:hover {
+            background: #480ca8;
+        }
+
+        body.blue-theme .sudoku-cell:hover {
+            background: #2a486b;
+        }
+
+        .sudoku-cell.fixed {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.05), rgba(255, 107, 157, 0.05));
+            color: var(--primary);
+            font-weight: 800;
+            border-color: rgba(67, 97, 238, 0.2);
+        }
+
+        body.dark-theme .sudoku-cell.fixed {
+            background: linear-gradient(135deg, rgba(74, 107, 255, 0.1), rgba(255, 107, 157, 0.1));
+            color: #6d8aff;
+            border-color: rgba(74, 107, 255, 0.3);
+        }
+
+        body.purple-theme .sudoku-cell.fixed {
+            background: linear-gradient(135deg, rgba(114, 9, 183, 0.1), rgba(247, 37, 133, 0.1));
+            color: #9d4edd;
+            border-color: rgba(114, 9, 183, 0.3);
+        }
+
+        body.blue-theme .sudoku-cell.fixed {
+            background: linear-gradient(135deg, rgba(58, 134, 255, 0.1), rgba(131, 56, 236, 0.1));
+            color: #4cc9f0;
+            border-color: rgba(58, 134, 255, 0.3);
+        }
+
+        .sudoku-cell.selected {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(255, 107, 157, 0.05));
+            box-shadow: inset 0 0 0 2px var(--primary);
+            transform: scale(1.03);
+            z-index: 2;
+        }
+
+        body.dark-theme .sudoku-cell.selected {
+            background: linear-gradient(135deg, rgba(74, 107, 255, 0.2), rgba(255, 107, 157, 0.1));
+            box-shadow: inset 0 0 0 2px #4a6bff;
+        }
+
+        body.purple-theme .sudoku-cell.selected {
+            background: linear-gradient(135deg, rgba(114, 9, 183, 0.2), rgba(247, 37, 133, 0.1));
+            box-shadow: inset 0 0 0 2px #7209b7;
+        }
+
+        body.blue-theme .sudoku-cell.selected {
+            background: linear-gradient(135deg, rgba(58, 134, 255, 0.2), rgba(131, 56, 236, 0.1));
+            box-shadow: inset 0 0 0 2px #3a86ff;
+        }
+
+        .sudoku-cell.highlighted {
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.05), rgba(67, 97, 238, 0.05));
+        }
+
+        body.dark-theme .sudoku-cell.highlighted {
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(74, 107, 255, 0.1));
+        }
+
+        body.purple-theme .sudoku-cell.highlighted {
+            background: linear-gradient(135deg, rgba(247, 37, 133, 0.1), rgba(114, 9, 183, 0.1));
+        }
+
+        body.blue-theme .sudoku-cell.highlighted {
+            background: linear-gradient(135deg, rgba(131, 56, 236, 0.1), rgba(58, 134, 255, 0.1));
+        }
+
+        .sudoku-cell.error {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), rgba(255, 71, 87, 0.05));
+            color: var(--error);
+            border-color: var(--error);
+            animation: shake 0.5s ease;
+        }
+
+        body.dark-theme .sudoku-cell.error,
+        body.purple-theme .sudoku-cell.error,
+        body.blue-theme .sudoku-cell.error {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.2), rgba(255, 71, 87, 0.1));
+        }
+
+        .sudoku-cell.correct {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 212, 170, 0.05));
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        body.dark-theme .sudoku-cell.correct,
+        body.purple-theme .sudoku-cell.correct,
+        body.blue-theme .sudoku-cell.correct {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.2), rgba(0, 212, 170, 0.1));
+        }
+
+        /* Borders for rows and columns */
+        .sudoku-cell:nth-child(3n) {
+            border-right: 2px solid #adb5bd;
+        }
+
+        body.dark-theme .sudoku-cell:nth-child(3n),
+        body.purple-theme .sudoku-cell:nth-child(3n),
+        body.blue-theme .sudoku-cell:nth-child(3n) {
+            border-right: 2px solid #64748b;
+        }
+
+        .sudoku-cell:nth-child(9n+1) {
+            border-left: 2px solid #adb5bd;
+        }
+
+        body.dark-theme .sudoku-cell:nth-child(9n+1),
+        body.purple-theme .sudoku-cell:nth-child(9n+1),
+        body.blue-theme .sudoku-cell:nth-child(9n+1) {
+            border-left: 2px solid #64748b;
+        }
+
+        .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #adb5bd;
+        }
+
+        body.dark-theme .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        body.dark-theme .sudoku-cell:nth-child(n+46):nth-child(-n+54),
+        body.purple-theme .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        body.purple-theme .sudoku-cell:nth-child(n+46):nth-child(-n+54),
+        body.blue-theme .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        body.blue-theme .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #64748b;
+        }
+
+        .sudoku-cell:nth-child(n+1):nth-child(-n+9) {
+            border-top: 2px solid #adb5bd;
+        }
+
+        body.dark-theme .sudoku-cell:nth-child(n+1):nth-child(-n+9),
+        body.purple-theme .sudoku-cell:nth-child(n+1):nth-child(-n+9),
+        body.blue-theme .sudoku-cell:nth-child(n+1):nth-child(-n+9) {
+            border-top: 2px solid #64748b;
+        }
+
+        /* Thicker borders for 3x3 blocks */
+        .sudoku-cell:nth-child(27n),
+        .sudoku-cell:nth-child(27n-1),
+        .sudoku-cell:nth-child(27n-2) {
+            border-right: 3px solid #495057;
+        }
+
+        body.dark-theme .sudoku-cell:nth-child(27n),
+        body.dark-theme .sudoku-cell:nth-child(27n-1),
+        body.dark-theme .sudoku-cell:nth-child(27n-2),
+        body.purple-theme .sudoku-cell:nth-child(27n),
+        body.purple-theme .sudoku-cell:nth-child(27n-1),
+        body.purple-theme .sudoku-cell:nth-child(27n-2),
+        body.blue-theme .sudoku-cell:nth-child(27n),
+        body.blue-theme .sudoku-cell:nth-child(27n-1),
+        body.blue-theme .sudoku-cell:nth-child(27n-2) {
+            border-right: 3px solid #94a3b8;
+        }
+
+        .sudoku-cell:nth-child(27n+1),
+        .sudoku-cell:nth-child(27n+2),
+        .sudoku-cell:nth-child(27n+3) {
+            border-left: 3px solid #495057;
+        }
+
+        body.dark-theme .sudoku-cell:nth-child(27n+1),
+        body.dark-theme .sudoku-cell:nth-child(27n+2),
+        body.dark-theme .sudoku-cell:nth-child(27n+3),
+        body.purple-theme .sudoku-cell:nth-child(27n+1),
+        body.purple-theme .sudoku-cell:nth-child(27n+2),
+        body.purple-theme .sudoku-cell:nth-child(27n+3),
+        body.blue-theme .sudoku-cell:nth-child(27n+1),
+        body.blue-theme .sudoku-cell:nth-child(27n+2),
+        body.blue-theme .sudoku-cell:nth-child(27n+3) {
+            border-left: 3px solid #94a3b8;
+        }
+
+        .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 3px solid #495057;
+        }
+
+        body.dark-theme .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        body.dark-theme .sudoku-cell:nth-child(n+46):nth-child(-n+54),
+        body.purple-theme .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        body.purple-theme .sudoku-cell:nth-child(n+46):nth-child(-n+54),
+        body.blue-theme .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        body.blue-theme .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 3px solid #94a3b8;
+        }
+
+        .sudoku-cell:nth-child(n+1):nth-child(-n+9),
+        .sudoku-cell:nth-child(n+28):nth-child(-n+36) {
+            border-top: 3px solid #495057;
+        }
+
+        body.dark-theme .sudoku-cell:nth-child(n+1):nth-child(-n+9),
+        body.dark-theme .sudoku-cell:nth-child(n+28):nth-child(-n+36),
+        body.purple-theme .sudoku-cell:nth-child(n+1):nth-child(-n+9),
+        body.purple-theme .sudoku-cell:nth-child(n+28):nth-child(-n+36),
+        body.blue-theme .sudoku-cell:nth-child(n+1):nth-child(-n+9),
+        body.blue-theme .sudoku-cell:nth-child(n+28):nth-child(-n+36) {
+            border-top: 3px solid #94a3b8;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) scale(1.03); }
+            25% { transform: translateX(-2px) scale(1.03); }
+            75% { transform: translateX(2px) scale(1.03); }
+        }
+
+        /* ===== NUMBER PAD ===== */
+        .number-pad-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-theme .number-pad-container,
+        body.purple-theme .number-pad-container,
+        body.blue-theme .number-pad-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .number-pad-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+        }
+
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        .number-btn {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius-sm);
+            height: 55px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-theme .number-btn,
+        body.purple-theme .number-btn,
+        body.blue-theme .number-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #f8fafc;
+        }
+
+        .number-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1;
+        }
+
+        body.dark-theme .number-btn::before {
+            background: linear-gradient(135deg, #4a6bff, #ff6b9d);
+        }
+
+        body.purple-theme .number-btn::before {
+            background: linear-gradient(135deg, #7209b7, #f72585);
+        }
+
+        body.blue-theme .number-btn::before {
+            background: linear-gradient(135deg, #3a86ff, #8338ec);
+        }
+
+        .number-btn span {
+            position: relative;
+            z-index: 2;
+        }
+
+        .number-btn:hover::before {
+            opacity: 1;
+        }
+
+        .number-btn:hover {
+            color: white;
+            border-color: transparent;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        body.dark-theme .number-btn:hover {
+            box-shadow: 0 8px 20px rgba(74, 107, 255, 0.3);
+        }
+
+        body.purple-theme .number-btn:hover {
+            box-shadow: 0 8px 20px rgba(114, 9, 183, 0.3);
+        }
+
+        body.blue-theme .number-btn:hover {
+            box-shadow: 0 8px 20px rgba(58, 134, 255, 0.3);
+        }
+
+        .number-btn.clear {
+            background: linear-gradient(135deg, var(--error), #ff3742);
+            color: white;
+            grid-column: span 2;
+            border: none;
+        }
+
+        .number-btn.clear:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 71, 87, 0.3);
+        }
+
+        /* ===== CONTROL PANEL ===== */
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 25px 0;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: var(--border-radius-sm);
+            padding: 16px 12px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+
+        body.dark-theme .control-btn {
+            background: linear-gradient(135deg, #4a6bff, #3a56d4);
+            box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+        }
+
+        body.purple-theme .control-btn {
+            background: linear-gradient(135deg, #7209b7, #5a0b8c);
+            box-shadow: 0 4px 12px rgba(114, 9, 183, 0.3);
+        }
+
+        body.blue-theme .control-btn {
+            background: linear-gradient(135deg, #3a86ff, #2a66cc);
+            box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3);
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .control-btn:hover::before {
+            opacity: 1;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(67, 97, 238, 0.4);
+        }
+
+        body.dark-theme .control-btn:hover {
+            box-shadow: 0 8px 24px rgba(74, 107, 255, 0.4);
+        }
+
+        body.purple-theme .control-btn:hover {
+            box-shadow: 0 8px 24px rgba(114, 9, 183, 0.4);
+        }
+
+        body.blue-theme .control-btn:hover {
+            box-shadow: 0 8px 24px rgba(58, 134, 255, 0.4);
+        }
+
+        .control-btn i {
+            font-size: 18px;
+        }
+
+        .control-btn.secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid #e9ecef;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-theme .control-btn.secondary,
+        body.purple-theme .control-btn.secondary,
+        body.blue-theme .control-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn.secondary:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(67, 97, 238, 0.2);
+        }
+
+        body.dark-theme .control-btn.secondary:hover {
+            border-color: #4a6bff;
+            box-shadow: 0 8px 24px rgba(74, 107, 255, 0.2);
+        }
+
+        body.purple-theme .control-btn.secondary:hover {
+            border-color: #7209b7;
+            box-shadow: 0 8px 24px rgba(114, 9, 183, 0.2);
+        }
+
+        body.blue-theme .control-btn.secondary:hover {
+            border-color: #3a86ff;
+            box-shadow: 0 8px 24px rgba(58, 134, 255, 0.2);
+        }
+
+        .control-btn.success {
+            background: linear-gradient(135deg, var(--success), var(--accent-dark));
+            box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+        }
+
+        .control-btn.warning {
+            background: linear-gradient(135deg, var(--warning), #ff9500);
+            box-shadow: 0 4px 12px rgba(255, 165, 2, 0.3);
+        }
+
+        .control-btn.danger {
+            background: linear-gradient(135deg, var(--error), #ff3742);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+
+        /* ===== DAILY CHALLENGE TAB ===== */
+        .daily-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 25px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .daily-card::before {
+            content: '🔥';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 50px;
+            opacity: 0.2;
+        }
+
+        .daily-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(100px, -100px);
+        }
+
+        .daily-title {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .daily-timer {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: var(--border-radius-sm);
+            backdrop-filter: blur(10px);
+        }
+
+        .daily-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .daily-stat {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: var(--border-radius-sm);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .daily-stat:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .daily-stat-value {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .daily-stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* ===== ACHIEVEMENTS TAB ===== */
+        .achievements-container {
+            max-width: 100%;
+        }
+
+        .achievements-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-theme .achievements-header,
+        body.purple-theme .achievements-header,
+        body.blue-theme .achievements-header {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .achievement-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-theme .achievement-card,
+        body.purple-theme .achievement-card,
+        body.blue-theme .achievement-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .achievement-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0.7;
+        }
+
+        body.dark-theme .achievement-card::before {
+            background: linear-gradient(90deg, #4a6bff, #ff6b9d);
+        }
+
+        body.purple-theme .achievement-card::before {
+            background: linear-gradient(90deg, #7209b7, #f72585);
+        }
+
+        body.blue-theme .achievement-card::before {
+            background: linear-gradient(90deg, #3a86ff, #8338ec);
+        }
+
+        .achievement-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        body.dark-theme .achievement-card:hover,
+        body.purple-theme .achievement-card:hover,
+        body.blue-theme .achievement-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .achievement-card.locked {
+            opacity: 0.6;
+            filter: grayscale(1);
+        }
+
+        .achievement-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(255, 107, 157, 0.1));
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+        }
+
+        body.dark-theme .achievement-icon {
+            background: linear-gradient(135deg, rgba(74, 107, 255, 0.2), rgba(255, 107, 157, 0.2));
+        }
+
+        body.purple-theme .achievement-icon {
+            background: linear-gradient(135deg, rgba(114, 9, 183, 0.2), rgba(247, 37, 133, 0.2));
+        }
+
+        body.blue-theme .achievement-icon {
+            background: linear-gradient(135deg, rgba(58, 134, 255, 0.2), rgba(131, 56, 236, 0.2));
+        }
+
+        .achievement-title {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        body.dark-theme .achievement-title,
+        body.purple-theme .achievement-title,
+        body.blue-theme .achievement-title {
+            color: #f8fafc;
+        }
+
+        .achievement-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            min-height: 40px;
+            line-height: 1.6;
+        }
+
+        body.dark-theme .achievement-desc,
+        body.purple-theme .achievement-desc,
+        body.blue-theme .achievement-desc {
+            color: #94a3b8;
+        }
+
+        .achievement-xp {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 15px;
+            background: rgba(67, 97, 238, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        body.dark-theme .achievement-xp {
+            color: #6d8aff;
+            background: rgba(74, 107, 255, 0.2);
+        }
+
+        body.purple-theme .achievement-xp {
+            color: #9d4edd;
+            background: rgba(114, 9, 183, 0.2);
+        }
+
+        body.blue-theme .achievement-xp {
+            color: #4cc9f0;
+            background: rgba(58, 134, 255, 0.2);
+        }
+
+        /* ===== STATISTICS TAB ===== */
+        .stats-container {
+            max-width: 100%;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-theme .stat-card,
+        body.purple-theme .stat-card,
+        body.blue-theme .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        body.dark-theme .stat-card::before {
+            background: linear-gradient(90deg, #4a6bff, #ff6b9d);
+        }
+
+        body.purple-theme .stat-card::before {
+            background: linear-gradient(90deg, #7209b7, #f72585);
+        }
+
+        body.blue-theme .stat-card::before {
+            background: linear-gradient(90deg, #3a86ff, #8338ec);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        body.dark-theme .stat-card:hover,
+        body.purple-theme .stat-card:hover,
+        body.blue-theme .stat-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-card .stat-value {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.dark-theme .stat-card .stat-value {
+            background: linear-gradient(135deg, #4a6bff, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.purple-theme .stat-card .stat-value {
+            background: linear-gradient(135deg, #7209b7, #f72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.blue-theme .stat-card .stat-value {
+            background: linear-gradient(135deg, #3a86ff, #8338ec);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card .stat-label {
+            font-size: 15px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        body.dark-theme .stat-card .stat-label,
+        body.purple-theme .stat-card .stat-label,
+        body.blue-theme .stat-card .stat-label {
+            color: #94a3b8;
+        }
+
+        .stats-chart {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-theme .stats-chart,
+        body.purple-theme .stats-chart,
+        body.blue-theme .stats-chart {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* ===== SETTINGS TAB ===== */
+        .settings-container {
+            max-width: 100%;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-theme .settings-section,
+        body.purple-theme .settings-section,
+        body.blue-theme .settings-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0.7;
+        }
+
+        body.dark-theme .settings-section::before {
+            background: linear-gradient(90deg, #4a6bff, #ff6b9d);
+        }
+
+        body.purple-theme .settings-section::before {
+            background: linear-gradient(90deg, #7209b7, #f72585);
+        }
+
+        body.blue-theme .settings-section::before {
+            background: linear-gradient(90deg, #3a86ff, #8338ec);
+        }
+
+        .settings-title {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        body.dark-theme .settings-title,
+        body.purple-theme .settings-title,
+        body.blue-theme .settings-title {
+            color: #f8fafc;
+        }
+
+        .settings-title i {
+            color: var(--primary);
+        }
+
+        body.dark-theme .settings-title i {
+            color: #6d8aff;
+        }
+
+        body.purple-theme .settings-title i {
+            color: #9d4edd;
+        }
+
+        body.blue-theme .settings-title i {
+            color: #4cc9f0;
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .theme-btn {
+            padding: 20px 10px;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            background: white;
+            color: var(--text-primary);
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.dark-theme .theme-btn,
+        body.purple-theme .theme-btn,
+        body.blue-theme .theme-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .theme-btn:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2);
+        }
+
+        body.dark-theme .theme-btn:hover {
+            border-color: #4a6bff;
+            box-shadow: 0 8px 20px rgba(74, 107, 255, 0.2);
+        }
+
+        body.purple-theme .theme-btn:hover {
+            border-color: #7209b7;
+            box-shadow: 0 8px 20px rgba(114, 9, 183, 0.2);
+        }
+
+        body.blue-theme .theme-btn:hover {
+            border-color: #3a86ff;
+            box-shadow: 0 8px 20px rgba(58, 134, 255, 0.2);
+        }
+
+        .theme-btn.active {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.1);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+        }
+
+        body.dark-theme .theme-btn.active {
+            border-color: #4a6bff;
+            background: rgba(74, 107, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(74, 107, 255, 0.2);
+        }
+
+        body.purple-theme .theme-btn.active {
+            border-color: #7209b7;
+            background: rgba(114, 9, 183, 0.2);
+            box-shadow: 0 4px 12px rgba(114, 9, 183, 0.2);
+        }
+
+        body.blue-theme .theme-btn.active {
+            border-color: #3a86ff;
+            background: rgba(58, 134, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(58, 134, 255, 0.2);
+        }
+
+        .theme-btn i {
+            font-size: 24px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-theme .setting-item,
+        body.purple-theme .setting-item,
+        body.blue-theme .setting-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            flex: 1;
+            font-weight: 500;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        body.dark-theme .setting-label,
+        body.purple-theme .setting-label,
+        body.blue-theme .setting-label {
+            color: #f8fafc;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 55px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e9ecef;
+            transition: var(--transition);
+            border-radius: 34px;
+            border: 1px solid #dee2e6;
+        }
+
+        body.dark-theme .toggle-slider,
+        body.purple-theme .toggle-slider,
+        body.blue-theme .toggle-slider {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        body.dark-theme input:checked + .toggle-slider {
+            background-color: #4a6bff;
+            border-color: #4a6bff;
+        }
+
+        body.purple-theme input:checked + .toggle-slider {
+            background-color: #7209b7;
+            border-color: #7209b7;
+        }
+
+        body.blue-theme input:checked + .toggle-slider {
+            background-color: #3a86ff;
+            border-color: #3a86ff;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            outline: none;
+            -webkit-appearance: none;
+            margin-right: 15px;
+        }
+
+        body.dark-theme .slider,
+        body.purple-theme .slider,
+        body.blue-theme .slider {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+            border: 3px solid white;
+        }
+
+        body.dark-theme .slider::-webkit-slider-thumb {
+            background: #4a6bff;
+            box-shadow: 0 4px 8px rgba(74, 107, 255, 0.3);
+        }
+
+        body.purple-theme .slider::-webkit-slider-thumb {
+            background: #7209b7;
+            box-shadow: 0 4px 8px rgba(114, 9, 183, 0.3);
+        }
+
+        body.blue-theme .slider::-webkit-slider-thumb {
+            background: #3a86ff;
+            box-shadow: 0 4px 8px rgba(58, 134, 255, 0.3);
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        /* ===== NOTIFICATIONS ===== */
+        .notification-container {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 350px;
+            width: 100%;
+        }
+
+        .notification {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 18px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            border-right: 4px solid var(--primary);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        body.dark-theme .notification,
+        body.purple-theme .notification,
+        body.blue-theme .notification {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            border-right-color: var(--success);
+        }
+
+        .notification.error {
+            border-right-color: var(--error);
+        }
+
+        .notification.warning {
+            border-right-color: var(--warning);
+        }
+
+        .notification-icon {
+            font-size: 22px;
+            width: 40px;
+            height: 40px;
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.dark-theme .notification-icon {
+            background: rgba(74, 107, 255, 0.2);
+        }
+
+        body.purple-theme .notification-icon {
+            background: rgba(114, 9, 183, 0.2);
+        }
+
+        body.blue-theme .notification-icon {
+            background: rgba(58, 134, 255, 0.2);
+        }
+
+        .notification.success .notification-icon {
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--success);
+        }
+
+        body.dark-theme .notification.success .notification-icon,
+        body.purple-theme .notification.success .notification-icon,
+        body.blue-theme .notification.success .notification-icon {
+            background: rgba(0, 212, 170, 0.2);
+        }
+
+        .notification.error .notification-icon {
+            background: rgba(255, 71, 87, 0.1);
+            color: var(--error);
+        }
+
+        body.dark-theme .notification.error .notification-icon,
+        body.purple-theme .notification.error .notification-icon,
+        body.blue-theme .notification.error .notification-icon {
+            background: rgba(255, 71, 87, 0.2);
+        }
+
+        .notification.warning .notification-icon {
+            background: rgba(255, 165, 2, 0.1);
+            color: var(--warning);
+        }
+
+        body.dark-theme .notification.warning .notification-icon,
+        body.purple-theme .notification.warning .notification-icon,
+        body.blue-theme .notification.warning .notification-icon {
+            background: rgba(255, 165, 2, 0.2);
+        }
+
+        .notification-message {
+            flex: 1;
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        body.dark-theme .notification-message,
+        body.purple-theme .notification-message,
+        body.blue-theme .notification-message {
+            color: #f8fafc;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            .game-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .control-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .achievements-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .daily-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .notification-container {
+                left: 20px;
+                right: 20px;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sudoku-grid {
+                max-width: 300px;
+            }
+            
+            .sudoku-cell {
+                font-size: 16px;
+            }
+            
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .theme-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .number-pad {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .number-btn.clear {
+                grid-column: span 3;
+            }
+            
+            .main-header {
+                padding: 12px 15px;
+            }
+            
+            .logo-text {
+                font-size: 18px;
+            }
+            
+            .nav-tab span {
+                font-size: 13px;
+            }
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-1 { margin-top: 15px; }
+        .mt-2 { margin-top: 25px; }
+        .mt-3 { margin-top: 35px; }
+        .mb-1 { margin-bottom: 15px; }
+        .mb-2 { margin-bottom: 25px; }
+        .mb-3 { margin-bottom: 35px; }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary-dark));
+        }
+
+        body.dark-theme ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        body.dark-theme ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4a6bff, #ff6b9d);
+        }
+
+        body.purple-theme ::-webkit-scrollbar-track {
+            background: #3a0ca3;
+        }
+
+        body.purple-theme ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #7209b7, #f72585);
+        }
+
+        body.blue-theme ::-webkit-scrollbar-track {
+            background: #1d3557;
+        }
+
+        body.blue-theme ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3a86ff, #8338ec);
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .bounce-in {
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* ===== GRADIENT TEXT ===== */
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <!-- Loader -->
+    <div class="loader-container" id="loader">
+        <div class="loader-logo">
+            <i class="fas fa-brain"></i>
+        </div>
+        <div class="loader-text">Sudoku ZMAX</div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-container" id="appContainer" style="display: none;">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-puzzle-piece"></i>
+                </div>
+                <div class="logo-text">Sudoku ZMAX</div>
+            </div>
+            
+            <div class="user-stats">
+                <div class="stat-badge">
+                    <i class="fas fa-star"></i>
+                    <span id="userXP">0</span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-trophy"></i>
+                    <span id="userLevel">1</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="game">
+                <i class="fas fa-gamepad"></i>
+                <span>اللعبة</span>
+            </button>
+            <button class="nav-tab" data-tab="daily">
+                <i class="fas fa-fire"></i>
+                <span>اليومي</span>
+            </button>
+            <button class="nav-tab" data-tab="achievements">
+                <i class="fas fa-medal"></i>
+                <span>الإنجازات</span>
+            </button>
+            <button class="nav-tab" data-tab="stats">
+                <i class="fas fa-chart-bar"></i>
+                <span>الإحصائيات</span>
+            </button>
+            <button class="nav-tab" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>الإعدادات</span>
+            </button>
+        </nav>
+
+        <!-- Game Tab -->
+        <main class="main-content active" id="gameTab">
+            <div class="game-container">
+                <!-- Game Stats -->
+                <div class="game-stats">
+                    <div class="game-stat timer">
+                        <div class="stat-label">الوقت</div>
+                        <div class="stat-value" id="gameTimer">00:00</div>
+                    </div>
+                    
+                    <div class="game-stat">
+                        <div class="stat-label">الصعوبة</div>
+                        <div class="stat-value" id="gameDifficulty">متوسط</div>
+                    </div>
+                    
+                    <div class="game-stat">
+                        <div class="stat-label">الأخطاء</div>
+                        <div class="stat-value" id="gameMistakes">0</div>
+                    </div>
+                    
+                    <div class="game-stat">
+                        <div class="stat-label">التلميحات</div>
+                        <div class="stat-value" id="gameHints">5</div>
+                    </div>
+                </div>
+
+                <!-- Sudoku Board -->
+                <div class="sudoku-board-container">
+                    <div class="sudoku-grid" id="sudokuBoard">
+                        <!-- Cells will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Number Pad -->
+                <div class="number-pad-container">
+                    <div class="number-pad">
+                        <button class="number-btn" data-number="1"><span>1</span></button>
+                        <button class="number-btn" data-number="2"><span>2</span></button>
+                        <button class="number-btn" data-number="3"><span>3</span></button>
+                        <button class="number-btn" data-number="4"><span>4</span></button>
+                        <button class="number-btn" data-number="5"><span>5</span></button>
+                        <button class="number-btn" data-number="6"><span>6</span></button>
+                        <button class="number-btn" data-number="7"><span>7</span></button>
+                        <button class="number-btn" data-number="8"><span>8</span></button>
+                        <button class="number-btn" data-number="9"><span>9</span></button>
+                        <button class="number-btn clear" id="clearCell">
+                            <span><i class="fas fa-eraser"></i> مسح</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <button class="control-btn" id="newGameBtn">
+                        <i class="fas fa-plus-circle"></i>
+                        لعبة جديدة
+                    </button>
+                    
+                    <button class="control-btn secondary" id="hintBtn">
+                        <i class="fas fa-lightbulb"></i>
+                        تلميح
+                    </button>
+                    
+                    <button class="control-btn success" id="checkBtn">
+                        <i class="fas fa-check-circle"></i>
+                        تحقق
+                    </button>
+                    
+                    <button class="control-btn" id="solveBtn">
+                        <i class="fas fa-robot"></i>
+                        حل تلقائي
+                    </button>
+                    
+                    <button class="control-btn secondary" id="difficultyBtn">
+                        <i class="fas fa-sliders-h"></i>
+                        صعوبة
+                    </button>
+                    
+                    <button class="control-btn warning" id="undoBtn">
+                        <i class="fas fa-undo"></i>
+                        تراجع
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Daily Challenge Tab -->
+        <main class="main-content" id="dailyTab">
+            <div class="daily-card">
+                <h3 class="daily-title">🔥 التحدي اليومي</h3>
+                <p style="margin-bottom: 15px; opacity: 0.9;">أكمل اللغز اليومي واربح نقاطًا مميزة!</p>
+                <div class="daily-timer" id="dailyTimer">--:--:--</div>
+                
+                <div class="daily-stats">
+                    <div class="daily-stat">
+                        <div class="daily-stat-value" id="dailyPlayers">0</div>
+                        <div class="daily-stat-label">الأمس</div>
+                    </div>
+                    <div class="daily-stat">
+                        <div class="daily-stat-value" id="dailyBestTime">--:--</div>
+                        <div class="daily-stat-label">أفضل وقت</div>
+                    </div>
+                    <div class="daily-stat">
+                        <div class="daily-stat-value" id="dailyReward">500</div>
+                        <div class="daily-stat-label">نقطة مكافأة</div>
+                    </div>
+                    <div class="daily-stat">
+                        <div class="daily-stat-value" id="dailyCompleted">0</div>
+                        <div class="daily-stat-label">مكتملة</div>
+                    </div>
+                </div>
+                
+                <button class="control-btn" id="startDailyBtn" style="width: 100%; margin-top: 20px;">
+                    <i class="fas fa-play-circle"></i>
+                    ابدأ التحدي اليومي
+                </button>
+            </div>
+        </main>
+
+        <!-- Achievements Tab -->
+        <main class="main-content" id="achievementsTab">
+            <div class="achievements-container">
+                <div class="achievements-header">
+                    <h3 style="font-family: 'Tajawal';">🏆 إنجازاتي</h3>
+                    <div style="background: rgba(67, 97, 238, 0.1); padding: 10px 20px; border-radius: 20px; border: 1px solid rgba(67, 97, 238, 0.2);">
+                        <span id="completedAchievements">0</span>/<span id="totalAchievements">12</span>
+                    </div>
+                </div>
+                
+                <div class="achievements-grid" id="achievementsGrid">
+                    <!-- Achievements will be loaded here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Statistics Tab -->
+        <main class="main-content" id="statsTab">
+            <div class="stats-container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalGames">0</div>
+                        <div class="stat-label">الألعاب الكلية</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="winRate">0%</div>
+                        <div class="stat-label">معدل الفوز</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="bestTime">--:--</div>
+                        <div class="stat-label">أفضل وقت</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentStreak">0</div>
+                        <div class="stat-label">التوالي الحالي</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalXP">0</div>
+                        <div class="stat-label">النقاط الكلية</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="perfectGames">0</div>
+                        <div class="stat-label">الألعاب المثالية</div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4 class="settings-title">📊 تفاصيل الأداء</h4>
+                    <div style="color: var(--text-secondary); line-height: 1.8;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 10px 0; border-bottom: 1px solid rgba(0, 0, 0, 0.05);">
+                            <span>المستوى الحالي:</span>
+                            <span id="currentLevel" style="font-weight: 700; color: var(--primary);">1</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 10px 0; border-bottom: 1px solid rgba(0, 0, 0, 0.05);">
+                            <span>النقاط للصعود:</span>
+                            <span id="xpToNext" style="font-weight: 700; color: var(--primary);">1000</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 10px 0; border-bottom: 1px solid rgba(0, 0, 0, 0.05);">
+                            <span>متوسط الوقت:</span>
+                            <span id="avgTime" style="font-weight: 700; color: var(--primary);">--:--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 10px 0;">
+                            <span>مجموع ساعات اللعب:</span>
+                            <span id="totalHours" style="font-weight: 700; color: var(--primary);">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Settings Tab -->
+        <main class="main-content" id="settingsTab">
+            <div class="settings-container">
+                <div class="settings-section">
+                    <h4 class="settings-title"><i class="fas fa-palette"></i> المظهر</h4>
+                    <div class="theme-selector">
+                        <button class="theme-btn" data-theme="light">
+                            <i class="fas fa-sun"></i>
+                            <span>فاتح</span>
+                        </button>
+                        <button class="theme-btn" data-theme="dark">
+                            <i class="fas fa-moon"></i>
+                            <span>مظلم</span>
+                        </button>
+                        <button class="theme-btn" data-theme="blue">
+                            <i class="fas fa-tint"></i>
+                            <span>أزرق</span>
+                        </button>
+                        <button class="theme-btn" data-theme="purple">
+                            <i class="fas fa-gem"></i>
+                            <span>بنفسجي</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4 class="settings-title"><i class="fas fa-volume-up"></i> الصوت والاهتزاز</h4>
+                    <div class="setting-item">
+                        <span class="setting-label">الصوت</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="soundToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">الاهتزاز</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="vibrationToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">مستوى الصوت</span>
+                        <input type="range" min="0" max="100" value="50" class="slider" id="volumeSlider">
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4 class="settings-title"><i class="fas fa-gamepad"></i> إعدادات اللعبة</h4>
+                    <div class="setting-item">
+                        <span class="setting-label">الرسوم المتحركة</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="animationsToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">تظليل الخلايا</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="highlightToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">التلميحات التلقائية</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoHintsToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4 class="settings-title"><i class="fas fa-database"></i> البيانات</h4>
+                    <div class="settings-actions">
+                        <button class="control-btn secondary" id="exportDataBtn" style="flex: 1;">
+                            <i class="fas fa-download"></i>
+                            تصدير البيانات
+                        </button>
+                        <button class="control-btn danger" id="resetDataBtn" style="flex: 1;">
+                            <i class="fas fa-trash"></i>
+                            مسح البيانات
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notifications Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <script>
+        // ===== GAME CONFIGURATION =====
+        const GameConfig = {
+            DIFFICULTY: {
+                easy: { name: 'سهل', filledCells: 45, timeMultiplier: 1.0 },
+                medium: { name: 'متوسط', filledCells: 35, timeMultiplier: 1.5 },
+                hard: { name: 'صعب', filledCells: 25, timeMultiplier: 2.0 },
+                expert: { name: 'خبير', filledCells: 20, timeMultiplier: 2.5 }
+            },
+            
+            ACHIEVEMENTS: [
+                { id: 'first_game', icon: '🎯', title: 'البداية', description: 'أكمل أول لعبة سودوكو', xp: 100 },
+                { id: 'no_mistakes', icon: '⭐', title: 'الكمال', description: 'أكمل لعبة بدون أخطاء', xp: 200 },
+                { id: 'speed_runner', icon: '⚡', title: 'عداء السرعة', description: 'أكمل لعبة في أقل من 3 دقائق', xp: 300 },
+                { id: 'veteran', icon: '🛡️', title: 'المحارب القديم', description: 'أكمل 10 ألعاب', xp: 500 },
+                { id: 'expert', icon: '👑', title: 'سيد السودوكو', description: 'أكمل لعبة مستوى خبير', xp: 1000 },
+                { id: 'streak_master', icon: '🔥', title: 'سيد التسلسل', description: 'أكمل 5 ألعاب متتالية', xp: 400 },
+                { id: 'hint_saver', icon: '💡', title: 'حافظ التلميحات', description: 'أكمل 5 ألعاب بدون تلميحات', xp: 300 },
+                { id: 'quick_learner', icon: '🚀', title: 'المتعلم السريع', description: 'ارفع مستواك إلى 5', xp: 500 },
+                { id: 'daily_challenger', icon: '🏆', title: 'متحدي اليوم', description: 'أكمل 7 تحديات يومية', xp: 800 },
+                { id: 'perfectionist', icon: '✨', title: 'المثالي', description: 'أكمل 3 ألعاب متتالية بدون أخطاء', xp: 600 },
+                { id: 'marathon', icon: '🏃', title: 'الماراثون', description: 'العب لمدة 30 دقيقة', xp: 400 },
+                { id: 'collector', icon: '📚', title: 'الجامع', description: 'اكسب 5000 نقطة خبرة', xp: 1000 }
+            ],
+            
+            THEMES: {
+                light: { primary: '#4361ee', secondary: '#ff6b9d', bg: '#ffffff' },
+                dark: { primary: '#4a6bff', secondary: '#ff6b9d', bg: '#0f172a' },
+                blue: { primary: '#3a86ff', secondary: '#8338ec', bg: '#1d3557' },
+                purple: { primary: '#7209b7', secondary: '#f72585', bg: '#240046' }
+            }
+        };
+
+        // ===== GAME STATE =====
+        let gameState = {
+            board: [],
+            solution: [],
+            difficulty: 'medium',
+            time: 0,
+            timer: null,
+            selectedCell: null,
+            mistakes: 0,
+            hints: 5,
+            hintsUsed: 0,
+            isDailyChallenge: false,
+            isCompleted: false,
+            moves: []
+        };
+
+        // ===== USER PROFILE =====
+        let userProfile = {
+            name: 'اللاعب',
+            level: 1,
+            xp: 0,
+            gamesPlayed: 0,
+            gamesWon: 0,
+            totalPlayTime: 0,
+            bestTime: null,
+            currentStreak: 0,
+            longestStreak: 0,
+            lastPlayed: null,
+            perfectGames: 0,
+            expertGames: 0,
+            gamesWithoutHints: 0,
+            dailyChallengesCompleted: 0,
+            achievements: {},
+            settings: {
+                theme: 'light',
+                sound: true,
+                volume: 0.5,
+                vibration: true,
+                animations: true,
+                highlight: true,
+                autoHints: false
+            }
+        };
+
+        // ===== GAME MANAGER =====
+        class GameManager {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.loadUserData();
+                this.setupEventListeners();
+                this.createSudokuBoard();
+                this.generateNewPuzzle('medium');
+                this.startTimer();
+                this.updateUI();
+                this.setupDailyTimer();
+                
+                // Hide loader after 1.5 seconds
+                setTimeout(() => {
+                    document.getElementById('loader').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('appContainer').style.display = 'flex';
+                    }, 500);
+                }, 1500);
+            }
+
+            loadUserData() {
+                try {
+                    const saved = localStorage.getItem('sudokuZMAX');
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        userProfile = { ...userProfile, ...data.profile };
+                        this.applyTheme(userProfile.settings.theme);
+                    }
+                } catch (e) {
+                    console.warn('Failed to load user data');
+                }
+            }
+
+            saveUserData() {
+                try {
+                    const data = {
+                        profile: userProfile,
+                        lastSaved: new Date().toISOString()
+                    };
+                    localStorage.setItem('sudokuZMAX', JSON.stringify(data));
+                } catch (e) {
+                    console.warn('Failed to save user data');
+                }
+            }
+
+            setupEventListeners() {
+                // Navigation tabs
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => this.switchTab(e));
+                });
+
+                // Number pad
+                document.querySelectorAll('.number-btn').forEach(btn => {
+                    if (btn.dataset.number) {
+                        btn.addEventListener('click', () => this.inputNumber(parseInt(btn.dataset.number)));
+                    }
+                });
+
+                // Clear button
+                document.getElementById('clearCell').addEventListener('click', () => this.clearCell());
+
+                // Control buttons
+                document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
+                document.getElementById('hintBtn').addEventListener('click', () => this.getHint());
+                document.getElementById('checkBtn').addEventListener('click', () => this.checkSolution());
+                document.getElementById('solveBtn').addEventListener('click', () => this.solvePuzzle());
+                document.getElementById('difficultyBtn').addEventListener('click', () => this.changeDifficulty());
+                document.getElementById('undoBtn').addEventListener('click', () => this.undoMove());
+                
+                // Daily challenge
+                document.getElementById('startDailyBtn').addEventListener('click', () => this.startDailyChallenge());
+
+                // Settings
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.changeTheme(e.target.dataset.theme));
+                });
+                document.getElementById('soundToggle').addEventListener('change', (e) => this.toggleSound(e.target.checked));
+                document.getElementById('vibrationToggle').addEventListener('change', (e) => this.toggleVibration(e.target.checked));
+                document.getElementById('volumeSlider').addEventListener('input', (e) => this.changeVolume(e.target.value));
+                document.getElementById('animationsToggle').addEventListener('change', (e) => this.toggleAnimations(e.target.checked));
+                document.getElementById('highlightToggle').addEventListener('change', (e) => this.toggleHighlight(e.target.checked));
+                document.getElementById('autoHintsToggle').addEventListener('change', (e) => this.toggleAutoHints(e.target.checked));
+                document.getElementById('exportDataBtn').addEventListener('click', () => this.exportData());
+                document.getElementById('resetDataBtn').addEventListener('click', () => this.resetData());
+            }
+
+            createSudokuBoard() {
+                const board = document.getElementById('sudokuBoard');
+                board.innerHTML = '';
+                
+                for (let i = 0; i < 81; i++) {
+                    const cell = document.createElement('button');
+                    cell.className = 'sudoku-cell';
+                    cell.dataset.index = i;
+                    
+                    cell.addEventListener('click', () => this.selectCell(i));
+                    cell.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.selectCell(i);
+                    });
+                    
+                    board.appendChild(cell);
+                }
+            }
+
+            generateNewPuzzle(difficulty) {
+                gameState.difficulty = difficulty;
+                gameState.time = 0;
+                gameState.mistakes = 0;
+                gameState.hints = 5;
+                gameState.hintsUsed = 0;
+                gameState.selectedCell = null;
+                gameState.isCompleted = false;
+                gameState.moves = [];
+                
+                // Generate puzzle
+                const { puzzle, solution } = this.generateSudokuPuzzle(difficulty);
+                gameState.board = puzzle;
+                gameState.solution = solution;
+                
+                this.updateBoard();
+                this.updateGameStats();
+                
+                // Save initial state for undo
+                gameState.moves.push({
+                    board: [...gameState.board],
+                    selectedCell: gameState.selectedCell,
+                    time: gameState.time,
+                    mistakes: gameState.mistakes,
+                    hints: gameState.hints
+                });
+            }
+
+            generateSudokuPuzzle(difficulty) {
+                const filledCells = GameConfig.DIFFICULTY[difficulty].filledCells;
+                
+                // Create a solved board
+                const board = Array(81).fill(0);
+                this.fillDiagonal(board);
+                this.solveSudoku(board);
+                
+                const solution = [...board];
+                
+                // Remove cells to create puzzle
+                const cellsToRemove = 81 - filledCells;
+                const cells = Array.from({ length: 81 }, (_, i) => i);
+                this.shuffleArray(cells);
+                
+                let removed = 0;
+                for (const cell of cells) {
+                    if (removed >= cellsToRemove) break;
+                    
+                    const temp = board[cell];
+                    board[cell] = 0;
+                    
+                    // Check if puzzle still has unique solution
+                    const testBoard = [...board];
+                    const solutions = [];
+                    this.countSolutions(testBoard, solutions, 2);
+                    
+                    if (solutions.length === 1) {
+                        removed++;
+                    } else {
+                        board[cell] = temp;
+                    }
+                }
+                
+                return { puzzle: board, solution };
+            }
+
+            fillDiagonal(board) {
+                for (let i = 0; i < 9; i += 3) {
+                    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                    this.shuffleArray(numbers);
+                    
+                    for (let r = 0; r < 3; r++) {
+                        for (let c = 0; c < 3; c++) {
+                            board[(i + r) * 9 + (i + c)] = numbers[r * 3 + c];
+                        }
+                    }
+                }
+            }
+
+            solveSudoku(board) {
+                return this.backtrack(board) ? board : board;
+            }
+
+            backtrack(board) {
+                for (let i = 0; i < 81; i++) {
+                    if (board[i] === 0) {
+                        const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                        this.shuffleArray(numbers);
+                        
+                        for (const num of numbers) {
+                            if (this.isValid(board, i, num)) {
+                                board[i] = num;
+                                if (this.backtrack(board)) {
+                                    return true;
+                                }
+                                board[i] = 0;
+                            }
+                        }
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            isValid(board, index, num) {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                
+                // Check row
+                for (let c = 0; c < 9; c++) {
+                    if (board[row * 9 + c] === num) return false;
+                }
+                
+                // Check column
+                for (let r = 0; r < 9; r++) {
+                    if (board[r * 9 + col] === num) return false;
+                }
+                
+                // Check 3x3 box
+                const boxRow = Math.floor(row / 3) * 3;
+                const boxCol = Math.floor(col / 3) * 3;
+                
+                for (let r = boxRow; r < boxRow + 3; r++) {
+                    for (let c = boxCol; c < boxCol + 3; c++) {
+                        if (board[r * 9 + c] === num) return false;
+                    }
+                }
+                
+                return true;
+            }
+
+            countSolutions(board, solutions, limit) {
+                if (solutions.length >= limit) return;
+                
+                for (let i = 0; i < 81; i++) {
+                    if (board[i] === 0) {
+                        for (let num = 1; num <= 9; num++) {
+                            if (this.isValid(board, i, num)) {
+                                board[i] = num;
+                                this.countSolutions(board, solutions, limit);
+                                board[i] = 0;
+                                
+                                if (solutions.length >= limit) return;
+                            }
+                        }
+                        return;
+                    }
+                }
+                solutions.push([...board]);
+            }
+
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            updateBoard() {
+                const cells = document.querySelectorAll('.sudoku-cell');
+                
+                cells.forEach((cell, index) => {
+                    const value = gameState.board[index];
+                    cell.textContent = value !== 0 ? value : '';
+                    cell.className = 'sudoku-cell';
+                    
+                    // Mark fixed cells (from original puzzle)
+                    if (gameState.board[index] !== 0 && gameState.board[index] === gameState.solution[index]) {
+                        // Check if this was an original clue (first move)
+                        if (gameState.moves.length <= 1 || 
+                            (gameState.moves[0] && gameState.moves[0].board[index] === value)) {
+                            cell.classList.add('fixed');
+                        }
+                    }
+                    
+                    // Check for errors
+                    if (value !== 0 && value !== gameState.solution[index]) {
+                        cell.classList.add('error');
+                    }
+                    
+                    // Check if selected
+                    if (index === gameState.selectedCell) {
+                        cell.classList.add('selected');
+                        if (userProfile.settings.highlight) {
+                            this.highlightRelatedCells(index);
+                        }
+                    }
+                });
+            }
+
+            highlightRelatedCells(index) {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                const boxRow = Math.floor(row / 3);
+                const boxCol = Math.floor(col / 3);
+                
+                document.querySelectorAll('.sudoku-cell').forEach((cell, i) => {
+                    const r = Math.floor(i / 9);
+                    const c = i % 9;
+                    const bR = Math.floor(r / 3);
+                    const bC = Math.floor(c / 3);
+                    
+                    if (r === row || c === col || (bR === boxRow && bC === boxCol)) {
+                        cell.classList.add('highlighted');
+                    }
+                });
+            }
+
+            selectCell(index) {
+                if (gameState.isCompleted) return;
+                
+                document.querySelectorAll('.sudoku-cell').forEach(cell => {
+                    cell.classList.remove('selected', 'highlighted');
+                });
+                
+                gameState.selectedCell = index;
+                const cell = document.querySelectorAll('.sudoku-cell')[index];
+                cell.classList.add('selected');
+                
+                if (userProfile.settings.highlight) {
+                    this.highlightRelatedCells(index);
+                }
+            }
+
+            inputNumber(number) {
+                if (gameState.isCompleted || gameState.selectedCell === null) {
+                    if (gameState.selectedCell === null) {
+                        this.showNotification('الرجاء اختيار خلية أولاً', 'warning');
+                    }
+                    return;
+                }
+                
+                const index = gameState.selectedCell;
+                const cell = document.querySelectorAll('.sudoku-cell')[index];
+                
+                // Check if cell is fixed
+                if (cell.classList.contains('fixed')) {
+                    this.showNotification('لا يمكن تعديل الرقم الثابت', 'error');
+                    return;
+                }
+                
+                // Save current state for undo
+                gameState.moves.push({
+                    board: [...gameState.board],
+                    selectedCell: gameState.selectedCell,
+                    time: gameState.time,
+                    mistakes: gameState.mistakes,
+                    hints: gameState.hints
+                });
+                
+                // Update board
+                gameState.board[index] = number;
+                
+                // Check if correct
+                if (number !== 0 && number !== gameState.solution[index]) {
+                    gameState.mistakes++;
+                    if (userProfile.settings.vibration && navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                    this.showNotification('رقم خاطئ!', 'error');
+                } else if (number !== 0) {
+                    // Optional: show success feedback
+                    if (userProfile.settings.animations) {
+                        cell.classList.add('correct');
+                        setTimeout(() => cell.classList.remove('correct'), 300);
+                    }
+                }
+                
+                this.updateBoard();
+                this.updateGameStats();
+                
+                // Check if game is complete
+                if (this.isBoardComplete()) {
+                    this.finishGame();
+                }
+            }
+
+            clearCell() {
+                if (gameState.isCompleted || gameState.selectedCell === null) return;
+                
+                const index = gameState.selectedCell;
+                const cell = document.querySelectorAll('.sudoku-cell')[index];
+                
+                if (cell.classList.contains('fixed')) {
+                    this.showNotification('لا يمكن مسح الرقم الثابت', 'error');
+                    return;
+                }
+                
+                if (gameState.board[index] !== 0) {
+                    gameState.moves.push({
+                        board: [...gameState.board],
+                        selectedCell: gameState.selectedCell,
+                        time: gameState.time,
+                        mistakes: gameState.mistakes,
+                        hints: gameState.hints
+                    });
+                    
+                    gameState.board[index] = 0;
+                    this.updateBoard();
+                }
+            }
+
+            undoMove() {
+                if (gameState.moves.length <= 1 || gameState.isCompleted) return;
+                
+                const lastState = gameState.moves.pop();
+                gameState.board = lastState.board;
+                gameState.selectedCell = lastState.selectedCell;
+                gameState.time = lastState.time;
+                gameState.mistakes = lastState.mistakes;
+                gameState.hints = lastState.hints;
+                
+                this.updateBoard();
+                this.updateGameStats();
+                this.updateTimerDisplay();
+            }
+
+            isBoardComplete() {
+                for (let i = 0; i < 81; i++) {
+                    if (gameState.board[i] === 0 || gameState.board[i] !== gameState.solution[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            finishGame() {
+                gameState.isCompleted = true;
+                clearInterval(gameState.timer);
+                
+                // Calculate score
+                const timeScore = Math.max(100, 1000 - (gameState.time * 2));
+                const mistakesPenalty = gameState.mistakes * 20;
+                const hintsPenalty = gameState.hintsUsed * 10;
+                const finalScore = Math.max(100, timeScore - mistakesPenalty - hintsPenalty);
+                
+                // Update user profile
+                const leveledUp = this.addXP(finalScore);
+                userProfile.gamesPlayed++;
+                userProfile.gamesWon++;
+                userProfile.totalPlayTime += gameState.time;
+                
+                if (!userProfile.bestTime || gameState.time < userProfile.bestTime) {
+                    userProfile.bestTime = gameState.time;
+                }
+                
+                if (gameState.mistakes === 0) {
+                    userProfile.perfectGames++;
+                }
+                
+                if (gameState.difficulty === 'expert') {
+                    userProfile.expertGames++;
+                }
+                
+                if (gameState.hintsUsed === 0) {
+                    userProfile.gamesWithoutHints++;
+                }
+                
+                // Update streak
+                const today = new Date().toISOString().split('T')[0];
+                if (userProfile.lastPlayed === today) {
+                    // Already played today
+                } else if (userProfile.lastPlayed && 
+                          this.getDaysBetween(userProfile.lastPlayed, today) === 1) {
+                    userProfile.currentStreak++;
+                } else {
+                    userProfile.currentStreak = 1;
+                }
+                
+                if (userProfile.currentStreak > userProfile.longestStreak) {
+                    userProfile.longestStreak = userProfile.currentStreak;
+                }
+                
+                userProfile.lastPlayed = today;
+                
+                // Update daily challenge if applicable
+                if (gameState.isDailyChallenge) {
+                    userProfile.dailyChallengesCompleted++;
+                }
+                
+                // Check achievements
+                this.checkAchievements();
+                
+                // Show completion message
+                let message = `🎉 مبروك! أكملت اللغز في ${this.formatTime(gameState.time)}`;
+                if (gameState.mistakes === 0) {
+                    message += ' - بدون أخطاء! 🎯';
+                }
+                message += `<br>النتيجة: ${finalScore} نقطة`;
+                
+                if (leveledUp) {
+                    message += `<br>🎊 لقد رفعت مستواك إلى ${userProfile.level}!`;
+                }
+                
+                this.showNotification(message, 'success');
+                
+                // Save user data
+                this.saveUserData();
+                
+                // Update UI
+                this.updateUserInfo();
+                this.updateStatistics();
+                
+                // Mark all cells as correct
+                document.querySelectorAll('.sudoku-cell').forEach(cell => {
+                    cell.classList.add('correct');
+                });
+            }
+
+            addXP(amount) {
+                const oldLevel = userProfile.level;
+                userProfile.xp += amount;
+                userProfile.level = Math.floor(userProfile.xp / 1000) + 1;
+                return userProfile.level > oldLevel;
+            }
+
+            getDaysBetween(date1, date2) {
+                const d1 = new Date(date1);
+                const d2 = new Date(date2);
+                const diffTime = Math.abs(d2 - d1);
+                return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            }
+
+            startTimer() {
+                clearInterval(gameState.timer);
+                gameState.timer = setInterval(() => {
+                    gameState.time++;
+                    this.updateTimerDisplay();
+                }, 1000);
+            }
+
+            updateTimerDisplay() {
+                document.getElementById('gameTimer').textContent = this.formatTime(gameState.time);
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            formatLongTime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const mins = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            updateGameStats() {
+                const difficultyNames = {
+                    easy: 'سهل',
+                    medium: 'متوسط',
+                    hard: 'صعب',
+                    expert: 'خبير'
+                };
+                
+                document.getElementById('gameDifficulty').textContent = difficultyNames[gameState.difficulty] || 'متوسط';
+                document.getElementById('gameMistakes').textContent = gameState.mistakes;
+                document.getElementById('gameHints').textContent = gameState.hints;
+            }
+
+            updateUserInfo() {
+                document.getElementById('userXP').textContent = userProfile.xp;
+                document.getElementById('userLevel').textContent = userProfile.level;
+            }
+
+            switchTab(e) {
+                const tabId = e.currentTarget.dataset.tab;
+                
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                e.currentTarget.classList.add('active');
+                
+                document.querySelectorAll('.main-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                document.getElementById(tabId + 'Tab').classList.add('active');
+                
+                switch(tabId) {
+                    case 'achievements':
+                        this.loadAchievements();
+                        break;
+                    case 'stats':
+                        this.updateStatistics();
+                        break;
+                    case 'daily':
+                        this.updateDailyStats();
+                        break;
+                }
+            }
+
+            newGame() {
+                if (!gameState.isCompleted && gameState.time > 0) {
+                    if (!confirm('هل تريد بدء لعبة جديدة؟ ستفقد تقدمك الحالي.')) {
+                        return;
+                    }
+                }
+                this.generateNewPuzzle(gameState.difficulty);
+                this.showNotification('بدأت لعبة جديدة!', 'info');
+            }
+
+            getHint() {
+                if (gameState.isCompleted) return;
+                if (gameState.hints <= 0) {
+                    this.showNotification('نفذت التلميحات!', 'warning');
+                    return;
+                }
+                if (gameState.selectedCell === null) {
+                    this.showNotification('اختر خلية للحصول على تلميح', 'warning');
+                    return;
+                }
+                
+                const index = gameState.selectedCell;
+                const cell = document.querySelectorAll('.sudoku-cell')[index];
+                
+                if (cell.classList.contains('fixed')) {
+                    this.showNotification('هذه الخلية ثابتة', 'info');
+                    return;
+                }
+                
+                gameState.board[index] = gameState.solution[index];
+                gameState.hints--;
+                gameState.hintsUsed++;
+                
+                this.selectCell(index);
+                this.updateBoard();
+                this.updateGameStats();
+                
+                this.showNotification('💡 تم إعطاؤك تلميحاً!', 'info');
+                
+                if (this.isBoardComplete()) {
+                    this.finishGame();
+                }
+            }
+
+            checkSolution() {
+                if (gameState.isCompleted) return;
+                
+                let hasErrors = false;
+                document.querySelectorAll('.sudoku-cell').forEach((cell, index) => {
+                    if (gameState.board[index] !== 0 && 
+                        gameState.board[index] !== gameState.solution[index]) {
+                        cell.classList.add('error');
+                        hasErrors = true;
+                    }
+                });
+                
+                if (!hasErrors) {
+                    this.showNotification('✅ ممتاز! الحل صحيح 100%', 'success');
+                } else {
+                    this.showNotification('❌ يوجد أخطاء في الحل', 'error');
+                }
+            }
+
+            solvePuzzle() {
+                if (gameState.isCompleted) return;
+                
+                if (confirm('هل تريد حل اللغز تلقائياً؟')) {
+                    gameState.board = [...gameState.solution];
+                    this.updateBoard();
+                    this.finishGame();
+                }
+            }
+
+            changeDifficulty() {
+                const difficulties = ['easy', 'medium', 'hard', 'expert'];
+                const currentIndex = difficulties.indexOf(gameState.difficulty);
+                const nextIndex = (currentIndex + 1) % difficulties.length;
+                this.generateNewPuzzle(difficulties[nextIndex]);
+                this.showNotification(`تم تغيير الصعوبة إلى ${GameConfig.DIFFICULTY[difficulties[nextIndex]].name}`, 'info');
+            }
+
+            startDailyChallenge() {
+                gameState.isDailyChallenge = true;
+                this.generateNewPuzzle('medium');
+                this.switchTab({ currentTarget: document.querySelector('[data-tab="game"]') });
+                this.showNotification('🔥 بدأ التحدي اليومي! حظاً موفقاً!', 'success');
+            }
+
+            setupDailyTimer() {
+                this.updateDailyTimer();
+                setInterval(() => this.updateDailyTimer(), 1000);
+            }
+
+            updateDailyTimer() {
+                const now = new Date();
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                
+                const diff = tomorrow - now;
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('dailyTimer').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            updateDailyStats() {
+                // Update daily stats
+                document.getElementById('dailyPlayers').textContent = userProfile.dailyChallengesCompleted;
+                document.getElementById('dailyBestTime').textContent = userProfile.bestTime ? 
+                    this.formatTime(userProfile.bestTime) : '--:--';
+                document.getElementById('dailyReward').textContent = '500';
+                document.getElementById('dailyCompleted').textContent = userProfile.dailyChallengesCompleted;
+            }
+
+            loadAchievements() {
+                const grid = document.getElementById('achievementsGrid');
+                grid.innerHTML = '';
+                
+                let completedCount = 0;
+                
+                GameConfig.ACHIEVEMENTS.forEach(achievement => {
+                    let isUnlocked = false;
+                    
+                    // Check achievement conditions
+                    switch(achievement.id) {
+                        case 'first_game':
+                            isUnlocked = userProfile.gamesPlayed >= 1;
+                            break;
+                        case 'no_mistakes':
+                            isUnlocked = userProfile.perfectGames >= 1;
+                            break;
+                        case 'speed_runner':
+                            isUnlocked = userProfile.bestTime !== null && userProfile.bestTime <= 180;
+                            break;
+                        case 'veteran':
+                            isUnlocked = userProfile.gamesPlayed >= 10;
+                            break;
+                        case 'expert':
+                            isUnlocked = userProfile.expertGames >= 1;
+                            break;
+                        case 'streak_master':
+                            isUnlocked = userProfile.currentStreak >= 5;
+                            break;
+                        case 'hint_saver':
+                            isUnlocked = userProfile.gamesWithoutHints >= 5;
+                            break;
+                        case 'quick_learner':
+                            isUnlocked = userProfile.level >= 5;
+                            break;
+                        case 'daily_challenger':
+                            isUnlocked = userProfile.dailyChallengesCompleted >= 7;
+                            break;
+                        case 'perfectionist':
+                            isUnlocked = userProfile.perfectGames >= 3;
+                            break;
+                        case 'marathon':
+                            isUnlocked = userProfile.totalPlayTime >= 1800;
+                            break;
+                        case 'collector':
+                            isUnlocked = userProfile.xp >= 5000;
+                            break;
+                    }
+                    
+                    if (isUnlocked) completedCount++;
+                    
+                    const card = document.createElement('div');
+                    card.className = `achievement-card ${isUnlocked ? '' : 'locked'}`;
+                    card.innerHTML = `
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-title">${achievement.title}</div>
+                        <div class="achievement-desc">${achievement.description}</div>
+                        <div class="achievement-xp">${achievement.xp} نقطة خبرة</div>
+                    `;
+                    
+                    grid.appendChild(card);
+                });
+                
+                document.getElementById('completedAchievements').textContent = completedCount;
+                document.getElementById('totalAchievements').textContent = GameConfig.ACHIEVEMENTS.length;
+            }
+
+            checkAchievements() {
+                let unlockedNew = [];
+                
+                GameConfig.ACHIEVEMENTS.forEach(achievement => {
+                    if (userProfile.achievements[achievement.id]) return; // Already unlocked
+                    
+                    let shouldUnlock = false;
+                    
+                    switch(achievement.id) {
+                        case 'first_game':
+                            shouldUnlock = userProfile.gamesPlayed >= 1;
+                            break;
+                        case 'no_mistakes':
+                            shouldUnlock = gameState.mistakes === 0;
+                            break;
+                        case 'speed_runner':
+                            shouldUnlock = gameState.time <= 180 && gameState.isCompleted;
+                            break;
+                        case 'veteran':
+                            shouldUnlock = userProfile.gamesPlayed >= 10;
+                            break;
+                        case 'expert':
+                            shouldUnlock = gameState.difficulty === 'expert' && gameState.isCompleted;
+                            break;
+                        case 'streak_master':
+                            shouldUnlock = userProfile.currentStreak >= 5;
+                            break;
+                        case 'hint_saver':
+                            shouldUnlock = gameState.hintsUsed === 0 && gameState.isCompleted;
+                            break;
+                        case 'quick_learner':
+                            shouldUnlock = userProfile.level >= 5;
+                            break;
+                        case 'daily_challenger':
+                            shouldUnlock = userProfile.dailyChallengesCompleted >= 7;
+                            break;
+                        case 'perfectionist':
+                            shouldUnlock = userProfile.perfectGames >= 3;
+                            break;
+                        case 'marathon':
+                            shouldUnlock = userProfile.totalPlayTime >= 1800;
+                            break;
+                        case 'collector':
+                            shouldUnlock = userProfile.xp >= 5000;
+                            break;
+                    }
+                    
+                    if (shouldUnlock) {
+                        userProfile.achievements[achievement.id] = true;
+                        unlockedNew.push(achievement);
+                    }
+                });
+                
+                // Show notifications for new achievements
+                unlockedNew.forEach(achievement => {
+                    this.showNotification(`🏆 فزت بإنجاز: ${achievement.title}! (+${achievement.xp} نقطة)`, 'success');
+                });
+            }
+
+            updateStatistics() {
+                document.getElementById('totalGames').textContent = userProfile.gamesPlayed;
+                document.getElementById('winRate').textContent = userProfile.gamesPlayed > 0 ? 
+                    Math.round((userProfile.gamesWon / userProfile.gamesPlayed) * 100) + '%' : '0%';
+                document.getElementById('bestTime').textContent = userProfile.bestTime ? 
+                    this.formatTime(userProfile.bestTime) : '--:--';
+                document.getElementById('currentStreak').textContent = userProfile.currentStreak;
+                document.getElementById('totalXP').textContent = userProfile.xp;
+                document.getElementById('perfectGames').textContent = userProfile.perfectGames;
+                
+                // Performance details
+                document.getElementById('currentLevel').textContent = userProfile.level;
+                document.getElementById('xpToNext').textContent = (userProfile.level * 1000 - userProfile.xp);
+                document.getElementById('avgTime').textContent = userProfile.gamesPlayed > 0 ? 
+                    this.formatTime(Math.round(userProfile.totalPlayTime / userProfile.gamesPlayed)) : '--:--';
+                document.getElementById('totalHours').textContent = Math.floor(userProfile.totalPlayTime / 3600);
+            }
+
+            applyTheme(theme) {
+                // Remove all theme classes
+                document.body.classList.remove('light-theme', 'dark-theme', 'blue-theme', 'purple-theme');
+                
+                // Add the selected theme class
+                document.body.classList.add(`${theme}-theme`);
+                
+                // Update CSS variables
+                const themeData = GameConfig.THEMES[theme];
+                if (themeData) {
+                    document.documentElement.style.setProperty('--primary', themeData.primary);
+                    document.documentElement.style.setProperty('--secondary', themeData.secondary);
+                    document.documentElement.style.setProperty('--bg-primary', themeData.bg);
+                }
+                
+                // Update active theme button
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.theme === theme) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            changeTheme(theme) {
+                if (!GameConfig.THEMES[theme]) return;
+                
+                userProfile.settings.theme = theme;
+                this.applyTheme(theme);
+                this.saveUserData();
+                
+                const themeNames = {
+                    light: 'فاتح',
+                    dark: 'مظلم',
+                    blue: 'أزرق',
+                    purple: 'بنفسجي'
+                };
+                
+                this.showNotification(`تم تغيير المظهر إلى ${themeNames[theme]}`, 'info');
+            }
+
+            toggleSound(enabled) {
+                userProfile.settings.sound = enabled;
+                this.saveUserData();
+            }
+
+            toggleVibration(enabled) {
+                userProfile.settings.vibration = enabled;
+                this.saveUserData();
+            }
+
+            changeVolume(value) {
+                userProfile.settings.volume = value / 100;
+                this.saveUserData();
+            }
+
+            toggleAnimations(enabled) {
+                userProfile.settings.animations = enabled;
+                this.saveUserData();
+            }
+
+            toggleHighlight(enabled) {
+                userProfile.settings.highlight = enabled;
+                this.saveUserData();
+            }
+
+            toggleAutoHints(enabled) {
+                userProfile.settings.autoHints = enabled;
+                this.saveUserData();
+            }
+
+            exportData() {
+                const data = {
+                    profile: userProfile,
+                    exportDate: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `sudoku-zmax-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showNotification('تم تصدير البيانات بنجاح', 'success');
+            }
+
+            resetData() {
+                if (confirm('هل أنت متأكد من مسح جميع البيانات؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                    localStorage.removeItem('sudokuZMAX');
+                    userProfile = {
+                        name: 'اللاعب',
+                        level: 1,
+                        xp: 0,
+                        gamesPlayed: 0,
+                        gamesWon: 0,
+                        totalPlayTime: 0,
+                        bestTime: null,
+                        currentStreak: 0,
+                        longestStreak: 0,
+                        lastPlayed: null,
+                        perfectGames: 0,
+                        expertGames: 0,
+                        gamesWithoutHints: 0,
+                        dailyChallengesCompleted: 0,
+                        achievements: {},
+                        settings: userProfile.settings
+                    };
+                    
+                    this.generateNewPuzzle('medium');
+                    this.updateUI();
+                    this.showNotification('تم مسح جميع البيانات', 'info');
+                }
+            }
+
+            updateUI() {
+                this.updateUserInfo();
+                this.updateGameStats();
+                this.updateStatistics();
+                this.updateDailyStats();
+                
+                // Update settings UI
+                document.getElementById('soundToggle').checked = userProfile.settings.sound;
+                document.getElementById('vibrationToggle').checked = userProfile.settings.vibration;
+                document.getElementById('volumeSlider').value = userProfile.settings.volume * 100;
+                document.getElementById('animationsToggle').checked = userProfile.settings.animations;
+                document.getElementById('highlightToggle').checked = userProfile.settings.highlight;
+                document.getElementById('autoHintsToggle').checked = userProfile.settings.autoHints;
+                
+                // Apply theme
+                this.applyTheme(userProfile.settings.theme);
+            }
+
+            showNotification(message, type = 'info') {
+                const container = document.getElementById('notificationContainer');
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                
+                const icons = {
+                    info: 'ℹ️',
+                    success: '✅',
+                    error: '❌',
+                    warning: '⚠️'
+                };
+                
+                notification.innerHTML = `
+                    <div class="notification-icon">${icons[type] || icons.info}</div>
+                    <div class="notification-message">${message}</div>
+                `;
+                
+                container.appendChild(notification);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 5000);
+            }
+        }
+
+        // Initialize the game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.gameManager = new GameManager();
+        });
+    </script>
+</body>
+</html>
